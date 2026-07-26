@@ -434,19 +434,35 @@
           ctx.translate(this.x, this.y);
           ctx.rotate(this.rotation);
           ctx.globalAlpha = this.opacity;
-
-          // Draw realistic organic petal path
+        
+          const w = this.size;
+          const h = this.size * 1.35;
+        
+          // 1. Soft Gradient Fill
+          const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
+          gradient.addColorStop(0, '#ffffff');       // White top
+          gradient.addColorStop(0.35, '#ffcfe0');    // Pastel pink middle
+          gradient.addColorStop(1, '#f48fb1');       // Vibrant pink base
+        
+          ctx.fillStyle = gradient;
+          ctx.strokeStyle = '#d81b60'; // Dark pink stroke outline
+          ctx.lineWidth = 0.8;
+        
+          // 2. Draw Custom Notched Sakura Petal
           ctx.beginPath();
-          ctx.fillStyle = '#f4c0c2';
-          ctx.ellipse(0, 0, this.size, this.size * 1.5, 0, 0, Math.PI * 2);
+          ctx.moveTo(0, h / 2); // Base point
+        
+          // Left curve to top notch
+          ctx.bezierCurveTo(-w * 0.9, h * 0.1, -w * 0.8, -h * 0.4, -w * 0.3, -h * 0.5);
+          // Notch in the top center
+          ctx.quadraticCurveTo(0, -h * 0.35, w * 0.3, -h * 0.5);
+          // Right curve back to base
+          ctx.bezierCurveTo(w * 0.8, -h * 0.4, w * 0.9, h * 0.1, 0, h / 2);
+        
+          ctx.closePath();
           ctx.fill();
-
-          // Petal Highlight gradient detail
-          ctx.beginPath();
-          ctx.fillStyle = '#e8a5a8';
-          ctx.ellipse(0, 0, this.size * 0.5, this.size * 0.8, 0, 0, Math.PI * 2);
-          ctx.fill();
-
+          ctx.stroke();
+        
           ctx.restore();
         }
       }
