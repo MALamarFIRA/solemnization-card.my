@@ -400,6 +400,42 @@
     .open .tap-text {
       display: none;
     }
+
+    /* Envelope Close Button */
+    .close-envelope-btn {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(58, 39, 18, 0.85);
+      color: #f4e4bc;
+      border: 1px solid #d4b886;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-family: 'Georgia', serif;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+      z-index: 25;
+      
+      /* Hidden by default when envelope is closed */
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.4s ease 0.4s, visibility 0.4s ease 0.4s, transform 0.2s ease;
+    }
+    
+    .close-envelope-btn:active {
+      transform: translateX(-50%) scale(0.95);
+    }
+    
+    /* Reveal Close Button when Open */
+    .open .close-envelope-btn {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
   </style>
 </head>
 <body>
@@ -482,11 +518,6 @@
         <div class="note">
           * This is a private solemnization ceremony reserved for our beloved family members only.
         </div>
-
-        <!-- Close Button -->
-        <button class="close-card-btn" onclick="closeEnvelope(event)">
-          ✉️ Close Invitation
-        </button>
       </div>
     </div>
 
@@ -496,8 +527,13 @@
       
       <!-- Wax Stamp -->
       <div class="stamp">💍</div>
-
-      <div class="envelope-pocket"></div>
+      
+      <div class="envelope-pocket">
+        <!-- Close Button (Visible only when envelope is open) -->
+        <button class="close-envelope-btn" onclick="closeEnvelope(event)">
+          ✉️ Close Envelope
+        </button>
+      </div>
       <div class="tap-text">Tap to Open</div>
     </div>
 
@@ -510,28 +546,69 @@
 
   <script>
     let isOpen = false;
+    let petalAnimationId = null; // Track petal animation frame
+    let ctx, canvas;            // Reusable canvas contexts
+  
     const bgMusic = document.getElementById('bgMusic');
     const musicBtn = document.getElementById('musicToggle');
     const musicIcon = document.getElementById('musicIcon');
     const musicText = document.getElementById('musicText');
-
+  
+    // OPEN ENVELOPE
     function openEnvelope() {
       if (!isOpen) {
         document.body.classList.add('open');
         isOpen = true;
         
+        // Reset volume and play music
+        bgMusic.volume = 1.0;
         bgMusic.play().catch(error => {
           console.log("Audio autoplay restricted:", error);
         });
-
+  
         startPetalsWithTilt();
       }
     }
-
-    // Music Control
+  
+    // CLOSE ENVELOPE (Triggered by Close Button on Envelope)
+    function closeEnvelope(event) {
+      if (event) event.stopPropagation(); // Prevents re-opening trigger
+  
+      if (isOpen) {
+        document.body.classList.remove('open');
+        isOpen = false;
+  
+        // 1. Fade music out and pause
+        fadeAudioOut();
+  
+        // 2. Stop animation and clear petals from screen
+        stopPetals();
+      }
+    }
+  
+    // Smooth Audio Fade-Out Function
+    function fadeAudioOut() {
+      if (bgMusic.paused) return;
+  
+      let fadeInterval = setInterval(() => {
+        if (bgMusic.volume > 0.05) {
+          bgMusic.volume -= 0.05;
+        } else {
+          bgMusic.pause();
+          bgMusic.currentTime = 0; // Reset audio track back to start
+          bgMusic.volume = 1.0;     // Reset default volume
+          musicIcon.textContent = '🔇';
+          musicText.textContent = 'Play Music';
+          clearInterval(fadeInterval);
+        }
+      }, 50); // Fades out over 1 second
+    }
+  
+    // Music Toggle Button
     musicBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (bgMusic.paused) {
+        bgMusic.volume = 1.0;
         bgMusic.play();
         musicIcon.textContent = '🎵';
         musicText.textContent = 'Pause Music';
@@ -541,22 +618,22 @@
         musicText.textContent = 'Play Music';
       }
     });
-
+  
     /* --- CANVAS-BASED PHYSICS PETAL SYSTEM --- */
     function startPetalsWithTilt() {
-      const canvas = document.getElementById('petal-canvas');
-      const ctx = canvas.getContext('2d');
-
+      canvas = document.getElementById('petal-canvas');
+      ctx = canvas.getContext('2d');
+  
       function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
       }
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
-
+  
       let tiltX = 0;
       let tiltY = 0;
-
+  
       // Device Orientation Physics
       if (window.DeviceOrientationEvent) {
         if (typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -569,25 +646,25 @@
           window.addEventListener('deviceorientation', handleOrientation);
         }
       }
-
+  
       function handleOrientation(event) {
         tiltX = (event.gamma || 0) * 0.08; 
         tiltY = (event.beta || 0) * 0.03;
       }
-
+  
       // Mouse fallback for Desktop testing
       window.addEventListener('mousemove', (e) => {
         tiltX = ((e.clientX / window.innerWidth) - 0.5) * 4;
       });
-
+  
       const petals = [];
       const petalCount = 30;
-
+  
       class Petal {
         constructor() {
           this.reset(true);
         }
-
+  
         reset(initial = false) {
           this.x = Math.random() * canvas.width;
           this.y = initial ? Math.random() * canvas.height : -30;
@@ -598,63 +675,74 @@
           this.rotationSpeed = (Math.random() - 0.5) * 0.03;
           this.opacity = Math.random() * 0.3 + 0.7;
         }
-
+  
         update() {
           this.y += this.speedY + Math.max(-0.5, tiltY);
           this.x += this.speedX + tiltX;
           this.rotation += this.rotationSpeed;
-
+  
           if (this.y > canvas.height + 30) this.reset();
           if (this.x > canvas.width + 30) this.x = -30;
           if (this.x < -30) this.x = canvas.width + 30;
         }
-
+  
         draw() {
           ctx.save();
           ctx.translate(this.x, this.y);
           ctx.rotate(this.rotation);
           ctx.globalAlpha = this.opacity;
-
+  
           const w = this.size;
           const h = this.size * 1.35;
-
+  
           const gradient = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
           gradient.addColorStop(0, '#ffffff');
           gradient.addColorStop(0.35, '#ffcfe0');
           gradient.addColorStop(1, '#f48fb1');
-
+  
           ctx.fillStyle = gradient;
           ctx.strokeStyle = '#d81b60';
           ctx.lineWidth = 0.8;
-
+  
           ctx.beginPath();
           ctx.moveTo(0, h / 2);
           ctx.bezierCurveTo(-w * 0.9, h * 0.1, -w * 0.8, -h * 0.4, -w * 0.3, -h * 0.5);
           ctx.quadraticCurveTo(0, -h * 0.35, w * 0.3, -h * 0.5);
           ctx.bezierCurveTo(w * 0.8, -h * 0.4, w * 0.9, h * 0.1, 0, h / 2);
-
+  
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
-
+  
           ctx.restore();
         }
       }
-
+  
       for (let i = 0; i < petalCount; i++) {
         petals.push(new Petal());
       }
-
+  
       function animate() {
+        if (!isOpen) return; // Halt loop when closed
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         petals.forEach(p => {
           p.update();
           p.draw();
         });
-        requestAnimationFrame(animate);
+        petalAnimationId = requestAnimationFrame(animate);
       }
-
+  
       animate();
+    }
+  
+    // Clear petals canvas when closed
+    function stopPetals() {
+      if (petalAnimationId) {
+        cancelAnimationFrame(petalAnimationId);
+      }
+      if (ctx && canvas) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
     }
   </script>
 </body>
