@@ -239,8 +239,9 @@
       width: 100%;
       border-top: 1px dashed rgba(139, 90, 43, 0.4);
       border-bottom: 1px dashed rgba(139, 90, 43, 0.4);
-      padding: 5px 0;
-      margin: 2px 0;
+      padding: 6px 0;
+      margin: 4px 0;
+      text-align: center;
     }
     
     .color-code-title {
@@ -249,28 +250,31 @@
       letter-spacing: 1.2px;
       font-weight: bold;
       color: #6e4722;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
     
     .color-code-group {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 8px;
-      font-size: 0.72rem;
+      gap: 10px;
+      font-size: 0.68rem;
+      line-height: 1;
     }
     
     .color-item {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
+      white-space: nowrap;
     }
     
     .color-divider {
       color: #8b5a2b;
       font-weight: bold;
-      opacity: 0.6;
+      opacity: 0.5;
       font-size: 0.75rem;
+      line-height: 1;
     }
     
     .color-dot {
@@ -278,16 +282,17 @@
       height: 10px;
       border-radius: 50%;
       display: inline-block;
-      box-shadow: 0 0 2px rgba(0,0,0,0.3);
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.25);
+      flex-shrink: 0;
     }
     
     .dot-groom {
-      background-color: #fef08a; /* Pastel Yellow */
+      background-color: #fef08a; /* Pastel Light Yellow */
       border: 1px solid #d97706;
     }
     
     .dot-bride {
-      background-color: #bae6fd; /* Pastel Blue */
+      background-color: #bae6fd; /* Pastel Light Blue */
       border: 1px solid #0284c7;
     }
 
@@ -355,17 +360,17 @@
           <strong>Venue:</strong> Eastwood Valley Golf & Country Club, Grand Ballroom, Miri, Sarawak
         </div>
 
-        <!-- Dress Code Section with Vertical Bar -->
+        <!-- Dress Code Section with Aligned Bar -->
         <div class="color-code-section">
           <div class="color-code-title">Family Dress Code Theme</div>
           <div class="color-code-group">
             <div class="color-item">
-              <span><strong>Groom:</strong> Pastel Light Yellow </span>
+              <span><strong>Groom:</strong> Pastel Light Yellow</span>
               <span class="color-dot dot-groom"></span>
             </div>
             <span class="color-divider">|</span>
             <div class="color-item">
-              <span><strong>Bride:</strong> Pastel Light Blue </span>
+              <span><strong>Bride:</strong> Pastel Light Blue</span>
               <span class="color-dot dot-bride"></span>
             </div>
           </div>
