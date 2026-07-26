@@ -563,12 +563,18 @@
         document.body.classList.add('open');
         isOpen = true;
         
-        // Reset volume and play music
-        bgMusic.volume = 1.0;
-        bgMusic.play().catch(error => {
-          console.log("Audio autoplay restricted:", error);
-        });
-  
+        // Play music and sync the button UI
+        if (bgMusic) {
+          bgMusic.volume = 1.0;
+          bgMusic.play().then(() => {
+            // Update button UI to show it's playing
+            if (musicIcon) musicIcon.textContent = '🎵';
+            if (musicText) musicText.textContent = 'Pause Music';
+          }).catch(error => {
+            console.log("Audio autoplay restricted:", error);
+          });
+        }
+    
         startPetalsWithTilt();
       }
     }
