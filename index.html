@@ -70,10 +70,10 @@
       position: relative;
       width: 100%;
       max-width: 340px;
-      height: 520px;
+      height: 100vh; /* Takes full viewport height */
       display: flex;
       justify-content: center;
-      align-items: center; /* Centered vertically initially */
+      align-items: center;
       transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
@@ -170,22 +170,22 @@
     }
 
     /* Old Paper Card Styling */
-    /* Card default hidden position inside centered envelope */
+    /* Card - Responsive Height & Padding */
     .card {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0.9);
       width: 88%;
-      height: 440px;
-      max-height: 75vh;
+      height: auto;           /* Allows content to dictate height naturally */
+      max-height: 65vh;       /* Prevents card from exceeding 65% of screen height */
       background: #f4e4bc;
       background-image: 
         radial-gradient(circle, rgba(0,0,0,0.03) 0%, rgba(139,90,43,0.18) 100%),
         linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(0,0,0,0.05));
       border: 1px solid #d4b886;
       box-shadow: inset 0 0 25px rgba(139, 90, 43, 0.35), 0 10px 25px rgba(0,0,0,0.5);
-      padding: 12px;
+      padding: 8px;
       text-align: center;
       color: #3a2712;
       border-radius: 3px;
@@ -336,9 +336,8 @@
     }
 
     /* OPEN ANIMATION LOGIC */
-    /* 3. OPEN ANIMATION STATE: Shift Envelope Down & Slide Card Up */
     .open .scene {
-      transform: translateY(120px); /* Moves the whole envelope container down */
+      transform: translateY(12vh); /* Shift down relative to screen height */
     }
     
     .open .stamp {
@@ -353,8 +352,8 @@
 
     .open .card {
       opacity: 1;
-      /* Pops out upwards from the lowered envelope */
-      transform: translate(-50%, -125%) scale(1);
+      /* Uses a safer -105% offset to keep top padding clean from the screen notch */
+      transform: translate(-50%, -105%) scale(1);
       z-index: 20;
     }
 
