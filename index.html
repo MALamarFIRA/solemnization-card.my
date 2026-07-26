@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Majlis Nikah Invitation</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #1e1b18;
+      font-family: 'Georgia', serif;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Fixed Top-Right Music Button */
+    .music-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #8b5a2b;
+      color: #f4e4bc;
+      border: 1px solid #d4b886;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease 0.8s, visibility 0.5s ease 0.8s;
+      z-index: 100;
+    }
+
+    .open .music-btn {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Petal Container Overlay */
+    #petal-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 80;
+      overflow: hidden;
+    }
+
+    /* Individual Petal Styling */
+    .petal {
+      position: absolute;
+      top: -30px;
+      background: linear-gradient(135deg, #fce4ec, #f8bbd0, #e5b382);
+      border-radius: 15px 0 15px 0;
+      opacity: 0;
+      pointer-events: none;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.95;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Main Container */
+    .scene {
+      position: relative;
+      width: 100%;
+      max-width: 340px;
+      height: 520px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    /* Envelope Base */
+    .envelope {
+      position: absolute;
+      bottom: 20px;
+      width: 100%;
+      height: 220px;
+      background: #8b5a2b;
+      border-radius: 6px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 170px solid transparent;
+      border-right: 170px solid transparent;
+      border-top: 120px solid #734821;
+      transform-origin: top;
+      transition: transform 0.5s ease, z-index 0.1s ease 0.25s;
+      z-index: 12;
+    }
+
+    @media (max-width: 350px) {
+      .envelope-flap {
+        border-left: calc(50vw - 10px) solid transparent;
+        border-right: calc(50vw - 10px) solid transparent;
+      }
+    }
+
+    /* Golden Wax Seal Stamp */
+    .stamp {
+      position: absolute;
+      top: 95px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 44px;
+      background: radial-gradient(circle, #e0a96d 0%, #b87b32 70%, #8b5a2b 100%);
+      border: 2px solid #f4e4bc;
+      border-radius: 50%;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 0 4px rgba(255,255,255,0.4);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #3a2712;
+      font-weight: bold;
+      font-size: 1.1rem;
+      z-index: 15;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .envelope-pocket {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #a87139 50%, #9c6733 50%);
+      clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+      border-radius: 0 0 6px 6px;
+      z-index: 11;
+    }
+
+    .tap-text {
+      position: absolute;
+      bottom: 25px;
+      width: 100%;
+      text-align: center;
+      color: #fff8e7;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      z-index: 13;
+      animation: pulse 1.5s infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Old Paper Card Styling */
+    .card {
+      position: absolute;
+      bottom: 30px;
+      width: 88%;
+      height: 420px;
+      max-height: 70vh;
+      background: #f4e4bc;
+      background-image: 
+        radial-gradient(circle, rgba(0,0,0,0.03) 0%, rgba(139,90,43,0.18) 100%),
+        linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(0,0,0,0.05));
+      border: 1px solid #d4b886;
+      box-shadow: inset 0 0 25px rgba(139, 90, 43, 0.35), 0 10px 25px rgba(0,0,0,0.5);
+      padding: 14px;
+      text-align: center;
+      color: #3a2712;
+      border-radius: 3px;
+      
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      z-index: 5;
+      
+      transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.3s, 
+                  opacity 0.4s ease 0.3s,
+                  z-index 0s 0.3s;
+    }
+
+    .card-border {
+      border: 1.5px dashed #8b5a2b;
+      height: 100%;
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .bismillah {
+      font-size: 1.05rem;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    .subtitle {
+      font-size: 0.65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #6e4722;
+    }
+
+    .title {
+      font-size: 1rem;
+      font-family: 'Times New Roman', serif;
+      font-weight: bold;
+      margin: 4px 0;
+    }
+
+    .names {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: #523315;
+      margin: 4px 0;
+      line-height: 1.3;
+    }
+
+    .details {
+      font-size: 0.78rem;
+      line-height: 1.45;
+      margin: 4px 0;
+    }
+
+    .note {
+      font-size: 0.68rem;
+      font-style: italic;
+      color: #6e4722;
+      border-top: 1px dotted #8b5a2b;
+      padding-top: 5px;
+      width: 100%;
+    }
+
+    /* OPEN ANIMATION LOGIC */
+    .open .stamp {
+      opacity: 0;
+      transform: translateX(-50%) scale(0.5);
+    }
+
+    .open .envelope-flap {
+      transform: rotateX(180deg);
+      z-index: 1;
+    }
+
+    .open .card {
+      opacity: 1;
+      transform: translateY(-85px) scale(1);
+      z-index: 20;
+    }
+
+    .open .tap-text {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Petal Falling Area -->
+  <div id="petal-container"></div>
+
+  <!-- Fixed Top-Right Music Button -->
+  <button class="music-btn" id="musicToggle" aria-label="Toggle Music">
+    <span id="musicIcon">🎵</span> <span id="musicText">Pause Music</span>
+  </button>
+
+  <div class="scene" id="scene">
+
+    <!-- Old Paper Card -->
+    <div class="card">
+      <div class="card-border">
+        <div>
+          <div class="bismillah">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+          <div class="subtitle">Special Invitation</div>
+        </div>
+
+        <div>
+          <div class="title">You're Invited to Majlis Nikah</div>
+          <div class="names">
+            Bride Name<br>&<br>Groom Name
+          </div>
+        </div>
+
+        <div class="details">
+          <strong>Date:</strong> Saturday, 12th December 2026<br>
+          <strong>Time:</strong> 10:00 AM<br>
+          <strong>Venue:</strong> Mosque / Location Address
+        </div>
+
+        <div class="note">
+          * Private Event: Warmly invited for our beloved family members only.
+        </div>
+      </div>
+    </div>
+
+    <!-- Sampul Envelope -->
+    <div class="envelope" onclick="openEnvelope()">
+      <div class="envelope-flap"></div>
+      
+      <!-- Wax Stamp -->
+      <div class="stamp">💍</div>
+
+      <div class="envelope-pocket"></div>
+      <div class="tap-text">Tap to Open</div>
+    </div>
+
+  </div>
+
+  <!-- Background Audio -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=soft-ambient-111333.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    let isOpen = false;
+    const bgMusic = document.getElementById('bgMusic');
+    const musicBtn = document.getElementById('musicToggle');
+    const musicIcon = document.getElementById('musicIcon');
+    const musicText = document.getElementById('musicText');
+
+    function openEnvelope() {
+      if (!isOpen) {
+        document.body.classList.add('open');
+        isOpen = true;
+        
+        bgMusic.play().catch(error => {
+          console.log("Audio autoplay restricted:", error);
+        });
+
+        startPetals();
+      }
+    }
+
+    // Music Control
+    musicBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (bgMusic.paused) {
+        bgMusic.play();
+        musicIcon.textContent = '🎵';
+        musicText.textContent = 'Pause Music';
+      } else {
+        bgMusic.pause();
+        musicIcon.textContent = '🔇';
+        musicText.textContent = 'Play Music';
+      }
+    });
+
+    // Petals Generator
+    function startPetals() {
+      const container = document.getElementById('petal-container');
+      const petalCount = 25;
+
+      for (let i = 0; i < petalCount; i++) {
+        const petal = document.createElement('div');
+        petal.classList.add('petal');
+        
+        const size = Math.random() * 12 + 10;
+        const left = Math.random() * 100;
+        const duration = Math.random() * 3 + 4; 
+        const delay = Math.random() * 4;
+
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size * 1.3}px`;
+        petal.style.left = `${left}%`;
+        petal.style.top = `-${Math.random() * 40 + 20}px`;
+        petal.style.animationDuration = `${duration}s`;
+        petal.style.animationDelay = `${delay}s`;
+
+        container.appendChild(petal);
+      }
+    }
+  </script>
+</body>
+</html>
