@@ -570,38 +570,41 @@
       }
     }
   
-    // CLOSE ENVELOPE (Triggered by Close Button on Envelope)
+    // CLOSE ENVELOPE (Triggered by Close Button)
     function closeEnvelope(event) {
       if (event) event.stopPropagation(); // Prevents re-opening trigger
-  
+    
       if (isOpen) {
         document.body.classList.remove('open');
         isOpen = false;
-  
-        // 1. Fade music out and pause
-        fadeAudioOut();
-  
+    
+        // 1. Immediately reset & stop music
+        stopAndResetAudio();
+    
         // 2. Stop animation and clear petals from screen
         stopPetals();
       }
     }
   
-    // Smooth Audio Fade-Out Function
-    function fadeAudioOut() {
-      if (bgMusic.paused) return;
-  
+    // Replace fadeAudioOut with this faster, reliable version
+    function stopAndResetAudio() {
+      if (!bgMusic) return;
+    
+      // Rapid fade out (300ms) to prevent audio engine lock
       let fadeInterval = setInterval(() => {
-        if (bgMusic.volume > 0.05) {
-          bgMusic.volume -= 0.05;
+        if (bgMusic.volume > 0.15) {
+          bgMusic.volume -= 0.15;
         } else {
-          bgMusic.pause();
-          bgMusic.currentTime = 0; // Reset audio track back to start
-          bgMusic.volume = 1.0;     // Reset default volume
-          musicIcon.textContent = '🔇';
-          musicText.textContent = 'Play Music';
           clearInterval(fadeInterval);
+          bgMusic.pause();
+          bgMusic.currentTime = 0; // Rewind back to start
+          bgMusic.volume = 1.0;    // Reset volume for next open
+          
+          // Update toggle UI
+          if (musicIcon) musicIcon.textContent = '🔇';
+          if (musicText) musicText.textContent = 'Play Music';
         }
-      }, 50); // Fades out over 1 second
+      }, 30);
     }
   
     // Music Toggle Button
