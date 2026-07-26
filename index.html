@@ -530,7 +530,7 @@
       
       <div class="envelope-pocket">
         <!-- Close Button (Visible only when envelope is open) -->
-        <button class="close-envelope-btn" onclick="closeEnvelope(event)">
+        <button type="button" class="close-envelope-btn" onclick="closeEnvelope(event)">
           ✉️ Close Envelope
         </button>
       </div>
@@ -570,18 +570,26 @@
       }
     }
   
-    // CLOSE ENVELOPE (Triggered by Close Button)
+    // CLOSE ENVELOPE (Direct, instant audio kill for iOS/Android)
     function closeEnvelope(event) {
-      if (event) event.stopPropagation(); // Prevents re-opening trigger
+      if (event) event.stopPropagation(); // Stop opening event
     
       if (isOpen) {
         document.body.classList.remove('open');
         isOpen = false;
     
-        // 1. Immediately reset & stop music
-        stopAndResetAudio();
+        // 1. Immediately force pause & reset the audio element
+        if (bgMusic) {
+          bgMusic.pause();
+          bgMusic.currentTime = 0; // Rewind track
+          bgMusic.volume = 1.0;    // Reset volume
+        }
     
-        // 2. Stop animation and clear petals from screen
+        // 2. Update UI Toggle text
+        if (musicIcon) musicIcon.textContent = '🔇';
+        if (musicText) musicText.textContent = 'Play Music';
+    
+        // 3. Clear canvas petals
         stopPetals();
       }
     }
