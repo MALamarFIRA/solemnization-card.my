@@ -184,11 +184,11 @@
     /* Card - Responsive Height & Padding */
     .card {
       position: absolute;
-      top: 65%;
+      top: 50%; /* Keep 50% here so centering is consistent */
       left: 50%;
       transform: translate(-50%, -50%) scale(0.9);
       width: 88%;
-      height: 440px; /* Restored full height for comfortable spacing */
+      height: 440px;
       background: #f4e4bc;
       background-image: 
         radial-gradient(circle, rgba(0,0,0,0.03) 0%, rgba(139,90,43,0.18) 100%),
@@ -203,8 +203,9 @@
       opacity: 0;
       z-index: 5;
       
-      transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.3s, 
-                  opacity 0.4s ease 0.3s,
+      /* Synchronized cubic-bezier transitions */
+      transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.1s, 
+                  opacity 0.4s ease 0.1s,
                   z-index 0s 0.3s;
     }
 
@@ -377,8 +378,9 @@
     }
 
     /* OPEN ANIMATION LOGIC */
+    /* Moves the envelope down to make room */
     .open .scene {
-      transform: translateY(165px); /* Moves envelope further down */
+      transform: translateY(160px);
     }
     
     .open .stamp {
@@ -393,7 +395,8 @@
 
     .open .card {
       opacity: 1;
-      transform: translate(-50%, -108%) scale(1); /* Card rests perfectly above envelope */
+      /* Slide card upward relative to the shifted envelope */
+      transform: translate(-50%, -105%) scale(1);
       z-index: 20;
     }
 
