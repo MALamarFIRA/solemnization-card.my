@@ -617,9 +617,12 @@
           });
         }
     
-        if (petalsEnabled) {
-          startPetals();
-        }
+        // Reset petals to "on" every time the envelope is opened,
+        // mirroring how the music always resumes on reopen
+        petalsEnabled = true;
+        petalsIcon.textContent = '🌸';
+        petalsText.textContent = 'Hide Petals';
+        startPetals();
       }
     }
   
