@@ -64,6 +64,34 @@
       visibility: visible;
     }
 
+    /* Fixed Top-Left Petals Toggle Button */
+    .petals-btn {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      background: #8b5a2b;
+      color: #f4e4bc;
+      border: 1px solid #d4b886;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.1s ease 0.1s, visibility 0.5s ease 0.8s;
+      z-index: 100;
+    }
+
+    .open .petals-btn {
+      opacity: 1;
+      visibility: visible;
+    }
+
     /* Petal Overlay Canvas */
     #petal-canvas {
       position: fixed;
@@ -451,6 +479,11 @@
     <span id="musicIcon">🎵</span> <span id="musicText">Pause Music</span>
   </button>
 
+  <!-- Fixed Top-Left Petals Toggle Button -->
+  <button class="petals-btn" id="petalsToggle" aria-label="Toggle Petals">
+    <span id="petalsIcon">🌸</span> <span id="petalsText">Hide Petals</span>
+  </button>
+
   <div class="scene" id="scene">
 
     <!-- Old Paper Card -->
@@ -549,13 +582,22 @@
 
   <script>
     let isOpen = false;
-    let petalAnimationId = null; // Track petal animation frame
-    let ctx, canvas;            // Reusable canvas contexts
+    let petalsEnabled = true;       // Guest-controlled toggle state
+    let petalSystemReady = false;   // Whether canvas/listeners have been set up
+    let petalAnimationId = null;    // Track petal animation frame
+    let ctx, canvas;                // Reusable canvas contexts
+    let petals = [];
+    let tiltX = 0;
+    let tiltY = 0;
   
     const bgMusic = document.getElementById('bgMusic');
     const musicBtn = document.getElementById('musicToggle');
     const musicIcon = document.getElementById('musicIcon');
     const musicText = document.getElementById('musicText');
+  
+    const petalsBtn = document.getElementById('petalsToggle');
+    const petalsIcon = document.getElementById('petalsIcon');
+    const petalsText = document.getElementById('petalsText');
   
     // OPEN ENVELOPE
     function openEnvelope() {
@@ -575,7 +617,9 @@
           });
         }
     
-        startPetalsWithTilt();
+        if (petalsEnabled) {
+          startPetals();
+        }
       }
     }
   
@@ -598,30 +642,9 @@
         if (musicIcon) musicIcon.textContent = '🔇';
         if (musicText) musicText.textContent = 'Play Music';
     
-        // 3. Clear canvas petals
+        // 3. Stop the petal animation loop
         stopPetals();
       }
-    }
-  
-    // Replace fadeAudioOut with this faster, reliable version
-    function stopAndResetAudio() {
-      if (!bgMusic) return;
-    
-      // Rapid fade out (300ms) to prevent audio engine lock
-      let fadeInterval = setInterval(() => {
-        if (bgMusic.volume > 0.15) {
-          bgMusic.volume -= 0.15;
-        } else {
-          clearInterval(fadeInterval);
-          bgMusic.pause();
-          bgMusic.currentTime = 0; // Rewind back to start
-          bgMusic.volume = 1.0;    // Reset volume for next open
-          
-          // Update toggle UI
-          if (musicIcon) musicIcon.textContent = '🔇';
-          if (musicText) musicText.textContent = 'Play Music';
-        }
-      }, 30);
     }
   
     // Music Toggle Button
@@ -639,8 +662,30 @@
       }
     });
   
+    // Petals Toggle Button
+    petalsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      petalsEnabled = !petalsEnabled;
+  
+      if (petalsEnabled) {
+        petalsIcon.textContent = '🌸';
+        petalsText.textContent = 'Hide Petals';
+        if (isOpen) startPetals();
+      } else {
+        petalsIcon.textContent = '🚫';
+        petalsText.textContent = 'Show Petals';
+        stopPetals();
+      }
+    });
+  
     /* --- CANVAS-BASED PHYSICS PETAL SYSTEM --- */
-    function startPetalsWithTilt() {
+  
+    // One-time setup: canvas sizing, resize listener, tilt/mouse listeners, petal objects.
+    // Runs on the first envelope open (a user gesture, needed for iOS motion permission).
+    function initPetalSystem() {
+      if (petalSystemReady) return;
+      petalSystemReady = true;
+  
       canvas = document.getElementById('petal-canvas');
       ctx = canvas.getContext('2d');
   
@@ -650,9 +695,6 @@
       }
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
-  
-      let tiltX = 0;
-      let tiltY = 0;
   
       // Device Orientation Physics
       if (window.DeviceOrientationEvent) {
@@ -677,7 +719,6 @@
         tiltX = ((e.clientX / window.innerWidth) - 0.5) * 4;
       });
   
-      const petals = [];
       const petalCount = 30;
   
       class Petal {
@@ -741,24 +782,30 @@
       for (let i = 0; i < petalCount; i++) {
         petals.push(new Petal());
       }
+    }
   
-      function animate() {
-        if (!isOpen) return; // Halt loop when closed
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        petals.forEach(p => {
-          p.update();
-          p.draw();
-        });
-        petalAnimationId = requestAnimationFrame(animate);
-      }
+    function animate() {
+      if (!isOpen || !petalsEnabled) return; // Halt loop when closed or toggled off
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      petals.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      petalAnimationId = requestAnimationFrame(animate);
+    }
   
+    // Start (or resume) the petal animation
+    function startPetals() {
+      initPetalSystem();
+      if (petalAnimationId) return; // Already running
       animate();
     }
   
-    // Clear petals canvas when closed
+    // Stop the petal animation and clear the canvas
     function stopPetals() {
       if (petalAnimationId) {
         cancelAnimationFrame(petalAnimationId);
+        petalAnimationId = null;
       }
       if (ctx && canvas) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
